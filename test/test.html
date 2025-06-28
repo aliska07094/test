@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Aşk Testi - Mini Oyun</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      max-width: 400px;
+      margin: 2rem auto;
+      background: black url('sks.jpg') no-repeat center center fixed;
+      background-size: cover;
+      padding: 1rem;
+      border-radius: 10px;
+      color: white;
+    }
+    h1 {
+      text-align: center;
+      color: #d81e5b;
+    }
+    .question {
+      margin: 1rem 0;
+    }
+    button {
+      background: #d81e5b;
+      color: white;
+      border: none;
+      padding: 0.6rem 1.2rem;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 1rem;
+    }
+    .result {
+      background: #fff0f5;
+      padding: 1rem;
+      border-radius: 10px;
+      margin-top: 1rem;
+      text-align: center;
+      font-weight: bold;
+      color: black;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Aşk Testi</h1>
+
+  <div id="quiz">
+    <div class="question" id="question-text"></div>
+    <div id="answers"></div>
+    <button id="next-btn" style="display:none;">Sonraki</button>
+  </div>
+
+  <div id="result" class="result" style="display:none;"></div>
+
+  <audio id="background-music" src="test-sarkı.mp3" loop></audio>
+
+  <script>
+    const questions = [
+      {
+        question: "Beraber en çok ne yapmayı severiz?",
+        answers: [
+          { text: "Midye yemeyi", score: 2 },
+          { text: "Dedikodu yapmayı (özellikle nonnizim)", score: 3 },
+          { text: "Tartışmayı", score: 1 }
+        ]
+      },
+      {
+        question: "Ali dövme yapınca sen ne hissettin?",
+        answers: [
+          { text: "İçim kıpır kıpır oldu", score: 3 },
+          { text: "Çok mutlu oldum, mutluluktan ne yapacağımı bilmiyordum", score: 2 },
+          { text: "Yapacağını düşünmüyordum", score: 1 }
+        ]
+      },
+      {
+        question: "En gıcık hangisi?",
+        answers: [
+          { text: "Zeynep Bastık🤮", score: 1 },
+          { text: "Demet Özdemir🤮", score: 3 },
+          { text: "Serenay Sarıkaya🤮", score: 2 }
+        ]
+      },
+      {
+        question: "Seninle en çok güldüğümüz an neydi?",
+        answers: [
+          { text: "Bir birimizin CIRBAĞALIKLARI", score: 2 },
+          { text: "Betüllll bittiiiii", score: 3 },
+          { text: "Komagenede reels izlediğimiz zaman", score: 1 }
+        ]
+      },
+      {
+        question: "Sabah uyanınca ilk aklına gelen şey ne olur?",
+        answers: [
+          { text: "Mesajın var mı diye bakmak(benim sana gönderdiğim)❤️", score: 2 },
+          { text: "Rüyamda Sevgilimi gördüm mü💕", score: 3 },
+          { text: "Saat kaç", score: 1 }
+        ]
+      },
+      {
+        question: "Beraber yapmak istediğimiz rüya ne?",
+        answers: [
+          { text: "BERABER DUŞ ALMAK🚿", score: 3 },
+          { text: "Makyaj yapmak bakım veya", score: 1 },
+          { text: "100 tane midye🐟🍚", score: 2 }
+        ]
+      },
+      {
+        question: "Birlikte olduğumuzda zaman nasıl geçiyor?",
+        answers: [
+          { text: "Dakikalar saniye gibi⌛", score: 1 },
+          { text: "Zaman durmuş gibi🛑", score: 2 },
+          { text: "Zaman kavramını unutuyorum", score: 3 }
+        ]
+      },
+      {
+        question: "Bir gün boyunca 7/24 beraber olsak ne olurdu?",
+        answers: [
+          { text: "Yemek yapıp yeriz derken aç kalmışızdır", score: 2 },
+          { text: "O gün sadece bizim olurdu, her saniyesi ateşli ve unutulmaz...❤️‍🔥", score: 3 },
+          { text: "Film izlerdik, sarılırdık, yemek yapardık, çok da uslu olurduk 🙈", score: 1 }
+        ]
+      },
+      {
+        question: "Ali sana 'seni seviyorum' deyince ne hissediyorsun?",
+        answers: [
+          { text: "Kalbim eriyor💘", score: 3 },
+          { text: "Mutlu oluyorum💕", score: 2 },
+          { text: "Biraz utanıyorum ama hoşuma gidiyor", score: 1 }
+        ]
+      },
+      {
+        question: "İkiniz hakkında bir film çekilse türü ne olurdu?",
+        answers: [
+          { text: "Romantik komedi", score: 3 },
+          { text: "Duygusal drama", score: 2 },
+          { text: "Macera – biraz tartışmalı ama sonunda mutlu", score: 1 }
+        ]
+      }
+    ];
+
+    let currentQuestion = 0;
+    let totalScore = 0;
+
+    const questionText = document.getElementById("question-text");
+    const answersDiv = document.getElementById("answers");
+    const nextBtn = document.getElementById("next-btn");
+    const resultDiv = document.getElementById("result");
+    const quiz = document.getElementById("quiz");
+    const music = document.getElementById("background-music");
+
+    function showQuestion() {
+      questionText.textContent = questions[currentQuestion].question;
+      answersDiv.innerHTML = "";
+
+      questions[currentQuestion].answers.forEach((answer) => {
+        const btn = document.createElement("button");
+        btn.textContent = answer.text;
+        btn.onclick = () => {
+          totalScore += answer.score;
+          nextBtn.style.display = "inline-block";
+          Array.from(answersDiv.children).forEach(b => b.disabled = true);
+          btn.style.backgroundColor = "#a7003c";
+
+          // Müzik otomatik başlamadıysa ilk tıklamada başlat
+          if (music.paused) {
+            music.play().catch(e => {
+              console.log("Müzik çalma engellendi:", e);
+            });
+          }
+        };
+        answersDiv.appendChild(btn);
+      });
+
+      nextBtn.style.display = "none";
+    }
+
+    nextBtn.onclick = () => {
+      currentQuestion++;
+      if (currentQuestion < questions.length) {
+        showQuestion();
+      } else {
+        showResult();
+      }
+    };
+
+    function showResult() {
+      quiz.style.display = "none";
+      resultDiv.style.display = "block";
+      resultDiv.textContent = `Toplam puanın: ${totalScore} 🎯`;
+    }
+
+    showQuestion();
+  </script>
+</body>
+</html>
